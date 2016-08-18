@@ -36,8 +36,8 @@ while (<$apkindex_fh>) {
            $latest_ver = join '.',(split /(?:V:|\.)/)[1,2];
            last;
         }
-}
-
+}   
+        
 seek $fh,0,0;
 close $apkindex_fh;
 
@@ -65,18 +65,18 @@ system('mount', '-oremount,rw' ,"/media/$media") == 0
 my @packages = qw/linux-grsec linux-grsec-dev xtables-addons-grsec linux-firmware/;
 system('apk', 'fetch' ,@packages) == 0
         or die $?;
-
+ 
 system('mount', '-t', 'tmpfs', '-oremount,size=2G' ,'/') == 0
         or die $?;
-
+      
 my @filenames = <*.apk>;
 print "Extracting:\n";
-for (@filenames) {
-          print " $_\n";
+for (@filenames) { 
+  print " $_\n";
   Archive::Tar->extract_archive($_) or die $Archive::Tar::error;
 }
 
-move("$_","$_" . '.old') for glob
+move($_,$_ . '.old') for glob 
             "{/media/$media/boot/}{System.map-grsec,config-grsec,grsec,grsec.gz,grsec.modloop.squashfs,vmlinuz-grsec}";
 
 
@@ -93,8 +93,8 @@ mypopd @dirs, 'rtlwifi_new';
 system("make") == 0
         or die $?;
 
-copy($_, "../lib/modules/$linux_ver/kernel/drivers/net/wireless/realtek/rtlwifi/$_")
-        for <*.ko rtl8192cu/*.ko btcoexist/*.ko>;
+copy($_, "../lib/modules/$linux_ver/kernel/drivers/net/wireless/realtek/rtlwifi/$_") 
+	for <*.ko rtl8192cu/*.ko btcoexist/*.ko>;
 
 mypopd @dirs;
 copy($_, "/media/$media/$_") for <boot/*>;
@@ -107,7 +107,7 @@ move("usr/src","/usr/src");
 system("mksquashfs", "lib/", "/media/$media/boot/grsec.modloop.squashfs", '-comp', 'xz') == 0
         or die $?;
 
-mypopd @dirs;
+mypopd @dirs;	
 
 system("umount", "-l", '/.modloop/') == 0
         or die $?;
@@ -117,7 +117,7 @@ system("mount", "/media/$media/boot/grsec.modloop.squashfs", '/.modloop/') == 0
 
 my $kernel_ver = first { m#\A/.modloop/modules/[\d\.-]+grsec\Z# } </.modloop/modules/*>;
 system('mkinitfs', '-F "ata base bootchart cdrom squashfs ext2 ext3 ext4 floppy raid scsi usb virtio"' ,'-o',
-          "/media/$media/boot/grsec.gz", substr "$kernel_ver",18) == 0
+          "/media/$media/boot/grsec.gz", substr $kernel_ver,18) == 0
         or die $?;
 
 undef @dirs;
@@ -131,7 +131,7 @@ system('mount', '-oremount,ro' ,"/media/$media") == 0
 sub mypopd (+@) {
         my $aref = shift;
         die "Not an array or arrayref" unless reftype $aref eq 'ARRAY';
-        @_ ? push @$aref, @_ : pop @$aref;
+	@_ ? push @$aref, @_ : pop @$aref;
 
-        chdir $aref->[-1] or die $@;
+	chdir $aref->[-1] or die $@;
 }
